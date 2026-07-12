@@ -1,0 +1,22 @@
+# Node
+node_modules/
+.next/
+out/
+build/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+env/
+ENV/
+
+# Env & local files
+*.local
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
