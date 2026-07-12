@@ -2,7 +2,7 @@
 
 Welcome to the comprehensive **Claude Code Workshop**! This hands-on workshop teaches you to leverage AI-powered development with **Claude** (Anthropic's Claude Code) through a real NBA sports application built with **Next.js 14 (Frontend)** and **Python Flask (Backend)**.
 
-> This workshop is a Claude-focused adaptation of the popular *GitHub Copilot Workshop*. Every exercise has been re-tooled around Claude Code — its agentic default loop, `CLAUDE.md` memory, subagents, slash commands, Agent Skills, MCP, plan mode, and checkpoints. If you've done the Copilot version, you'll recognize the app and the goals; the *how* is what changes.
+> This workshop is a Claude-focused adaptation of the [GitHub Copilot Workshop by yoavlax](https://github.com/yoavlax/githubcopilotworkshop). Every exercise has been re-tooled around Claude Code — its agentic default loop, `CLAUDE.md` memory, subagents, slash commands, Agent Skills, MCP, plan mode, and checkpoints. If you've done the Copilot version, you'll recognize the app and the goals; the *how* is what changes. See [Credits](#-credits--acknowledgments) below.
 
 ❗**Note**: No mastery of JavaScript, Python, or Next.js is needed — Claude will generate most of the code for you in this exercise. Even if you're not very familiar, it's a great opportunity to leverage AI to quickly learn popular frameworks.
 
@@ -860,9 +860,17 @@ input validation with zod, and proper error handling. Add a build script to pack
 
 **Getting help:** ask Claude to debug (`Explain this error and fix it: <paste>`), check the console, or review `backend/README.md`.
 
+## 🙏 Credits & Acknowledgments
+
+This workshop is **adapted from the [GitHub Copilot Workshop by yoavlax](https://github.com/yoavlax/githubcopilotworkshop)**. The NBA sample application (Flask backend + Next.js 14 frontend) and the overall task structure originate from that project. Full credit and thanks to the original author for the foundation.
+
+This adaptation re-tools every exercise around **Claude Code** — replacing GitHub Copilot's features with their Claude equivalents (`CLAUDE.md` project memory, subagents, custom slash commands, Agent Skills, MCP, plan mode, checkpoints, Claude on the web / GitHub Actions), rebranding the app, and adding step-by-step explanations of the setup commands.
+
+If you build on this workshop in turn, please keep the attribution chain intact by crediting both this repository and the original.
+
 ## 📄 License
 
-This project is for educational purposes as part of the Claude Code workshop.
+This project is for educational purposes. It is a derivative of the [original workshop](https://github.com/yoavlax/githubcopilotworkshop); please respect the original author's terms and this attribution when reusing or redistributing.
 
 ---
 
