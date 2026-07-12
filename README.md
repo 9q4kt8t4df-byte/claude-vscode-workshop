@@ -166,25 +166,30 @@ Frontend renders data
 
 ### 0.1 Install Claude Code
 
+Pick **one** of the methods below — they all install the same `claude` command, just via different package managers.
+
 **npm (all platforms):**
 ```bash
 npm install -g @anthropic-ai/claude-code
 ```
+`-g` installs it **globally**, so you can run `claude` from any folder (not just this project). Choose this if you already have Node.js/npm.
 
 **macOS/Linux/WSL (native installer):**
 ```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
+This downloads Anthropic's install script and runs it — it fetches a standalone `claude` binary, so you don't need Node.js. (`curl` downloads the script; `| bash` pipes it straight into your shell to execute.)
 
 **Windows (PowerShell):**
 ```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
+The PowerShell equivalent of the line above: `irm` (Invoke-RestMethod) downloads the script and `iex` (Invoke-Expression) runs it.
 
 Verify the install and run the built-in doctor:
 ```bash
-claude --version
-claude doctor
+claude --version    # prints the installed version — confirms `claude` is on your PATH
+claude doctor       # health check: verifies the install, auth, and config are set up correctly
 ```
 
 **IDE extension (optional but recommended):** Install the **Claude Code** extension for [VS Code](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) or JetBrains. It gives you inline diffs, an in-editor chat panel, and shares the same `CLAUDE.md` / `.claude/` configuration as the CLI.
@@ -199,7 +204,10 @@ On first run you'll be prompted to sign in with your **Claude account** (Pro/Max
 
 ### 0.3 Environment Setup
 
-#### Backend Setup (Python Flask)
+The app has **two services that run at the same time**: a Python backend (the API/data) and a Next.js frontend (the web UI). You'll start each in **its own terminal window** and leave both running for the whole workshop — the frontend calls the backend over HTTP, so if either is stopped, the app won't work. Set up the backend first (the frontend needs it to answer requests).
+
+#### Backend Setup (Python Flask) — Terminal 1
+
 ```bash
 cd backend
 python -m venv venv
@@ -208,15 +216,40 @@ python -m venv venv
 pip install -r requirements.txt
 python app.py            # http://localhost:8080
 ```
-Verify: `curl http://localhost:8080/api/health`
 
-#### Frontend Setup (Next.js)
+Line by line — **what each step does and why**:
+- `cd backend` — move into the backend folder so the following commands run against the Flask app.
+- `python -m venv venv` — create a **virtual environment** (a private, project-local Python with its own packages) in a new `venv/` folder. *Why:* it keeps this project's dependencies isolated from your system Python and other projects, so nothing conflicts.
+- `source venv/bin/activate` (or `venv\Scripts\activate` on Windows) — **activate** that virtual environment for this terminal. *Why:* after this, `python` and `pip` point at the project's isolated environment instead of your system-wide one. You'll know it worked when your prompt shows `(venv)`.
+- `pip install -r requirements.txt` — install the exact Python packages the backend needs (Flask, Flask-CORS, …), as listed in `requirements.txt`. *Why:* the app can't run without its libraries.
+- `python app.py` — start the Flask API server. *Why:* this is the backend. Leave it running; it serves data at **http://localhost:8080**.
+
+**Verify it's up** (in a separate terminal, or your browser):
+```bash
+curl http://localhost:8080/api/health
+```
+A JSON response like `{"status": "healthy", ...}` means the backend is working.
+
+#### Frontend Setup (Next.js) — Terminal 2
+
+Open a **new** terminal (leave the backend running in the first one) and:
+
 ```bash
 cd frontend
 npm install
 echo "NEXT_PUBLIC_API_URL=http://localhost:8080" > .env.local
 npm run dev              # http://localhost:3000
 ```
+
+Line by line — **what each step does and why**:
+- `cd frontend` — move into the frontend folder.
+- `npm install` — download the JavaScript/TypeScript packages listed in `package.json` into a local `node_modules/` folder. *Why:* the Next.js app needs its dependencies before it can run (this is the frontend equivalent of `pip install`).
+- `echo "NEXT_PUBLIC_API_URL=http://localhost:8080" > .env.local` — create a file named `.env.local` containing one **environment variable** that tells the frontend where the backend lives. *Why:* the app reads `NEXT_PUBLIC_API_URL` at runtime instead of hard-coding the backend URL, so you can point it at a different backend later without editing code. The `>` just writes that line into the file (creating it if needed). You could also create `.env.local` by hand in your editor — the `echo` command is only a shortcut.
+- `npm run dev` — start the Next.js **development server**. *Why:* this is the frontend. It serves the UI at **http://localhost:3000** and hot-reloads as you (or Claude) edit files. Leave it running.
+
+Now open **http://localhost:3000** in your browser — you should see the app, and it should be pulling data from the backend on port 8080.
+
+> 💡 **Mental model:** Terminal 1 = backend API (port 8080). Terminal 2 = frontend UI (port 3000). Your browser talks to 3000, and 3000 talks to 8080. Keep both terminals open for the whole workshop.
 
 ### 0.4 Choose Your Claude Model
 
@@ -531,7 +564,7 @@ Claude can see images. Give it a screenshot or mockup and ask it to build the UI
 
 ### 4.1 Add MCP Servers
 
-Add servers from the CLI (they're stored in `~/.claude.json` for user scope or `.mcp.json` for project scope):
+An MCP server is a small program that exposes extra tools to Claude. There are two kinds you'll add here: a **remote** server Claude reaches over the web (GitHub), and a **local** server that runs as a command on your machine (Playwright). The `claude mcp add` command registers one so Claude Code can use it.
 
 ```bash
 # GitHub (remote, OAuth) — great for issues/PRs/repos
@@ -541,11 +574,16 @@ claude mcp add --transport http github https://api.githubcopilot.com/mcp
 claude mcp add playwright -- npx -y @playwright/mcp@latest
 ```
 
+**Reading these commands — what each piece means and why:**
+- `claude mcp add <name> …` — register a new MCP server under a short `name` (here `github` / `playwright`) that you'll see in `/mcp`.
+- `--transport http` (first command) — tells Claude to talk to this server over **HTTP** at the given URL, because GitHub's MCP server is **remote/hosted**. *Why:* remote servers are reached by URL, not launched locally. (The default transport is `stdio` — a local command — which is why the second command doesn't need this flag.)
+- `-- npx -y @playwright/mcp@latest` (second command) — everything **after the `--`** is the command Claude runs to start the server locally. *Why the `--`?* it separates `claude`'s own options from the command-to-run, so flags like `-y` are passed to `npx`, not misread by `claude`. Here `npx -y @playwright/mcp@latest` downloads (if needed) and runs the Playwright MCP server on demand.
+
 Inside `claude`, manage and inspect servers with:
 ```
 /mcp
 ```
-Use `/mcp` to see connected servers, authenticate (OAuth flows happen here), and view available tools. Scope options: `--scope local` (default, just you), `--scope project` (shared via `.mcp.json`), `--scope user` (all your projects).
+Use `/mcp` to see connected servers, authenticate (the GitHub **OAuth** browser sign-in happens here), and view the tools each server provides. **Scope** controls who shares the server: `--scope local` (default — just you, this project), `--scope project` (shared with your team via a committed `.mcp.json`), `--scope user` (you, across all your projects).
 
 > 💡 A project-scoped `.mcp.json` lets your whole team share the same MCP setup. Commit it to the repo.
 
@@ -727,6 +765,8 @@ Create a new project and build a **Weather MCP server**, then connect it to Clau
 
 ### 8.2 Set Up
 
+You're creating a **brand-new Node.js project** for the server (separate from the NBA app). These commands scaffold an empty TypeScript project with the two libraries the server needs.
+
 **macOS/Linux:**
 ```bash
 mkdir weather && cd weather
@@ -745,6 +785,13 @@ npm install -D @types/node typescript
 md src; new-item src\index.ts
 ```
 
+**What each step does and why:**
+- `mkdir weather && cd weather` — make a new folder for the project and move into it. *Why:* the MCP server is its own standalone app, kept apart from the NBA workshop code.
+- `npm init -y` — create a `package.json` (the project's manifest) with default answers (`-y` = "yes to all", so it doesn't prompt you). *Why:* npm needs this file to track your dependencies and scripts.
+- `npm install @modelcontextprotocol/sdk zod` — install the two **runtime** libraries: the **MCP SDK** (lets your code speak the Model Context Protocol so Claude can call it) and **zod** (validates/parses the inputs each tool receives). *Why runtime:* the server needs these while it's actually running.
+- `npm install -D @types/node typescript` — install **dev-only** tools (`-D` = devDependency): `typescript` (compiles your `.ts` source to runnable JavaScript) and `@types/node` (type definitions so TypeScript understands Node.js APIs). *Why dev-only:* they're needed to *build* the server, not to *run* the compiled output.
+- `mkdir src && touch src/index.ts` — create a `src/` folder and an empty `index.ts` file in it. *Why:* `src/index.ts` is where you'll write the server; `touch` just creates the empty file so it's ready to open. (On Windows, `new-item src\index.ts` does the same thing.)
+
 ### 8.3 Build the Weather Server
 
 Let Claude Code help you write it! From the `weather` directory, run `claude` and ask:
@@ -759,11 +806,12 @@ input validation with zod, and proper error handling. Add a build script to pack
 
 ### 8.4 Connect & Test
 
-1. Build: `npm run build`
+1. Build: `npm run build` — compiles your TypeScript in `src/` into runnable JavaScript (typically in a `build/` folder). *Why:* Node runs JavaScript, not `.ts` files directly, so you build first.
 2. Register it with Claude Code:
    ```bash
    claude mcp add weather -- node /absolute/path/to/weather/build/index.js
    ```
+   Same shape as the local server in Task 4.1: everything after `--` is the command Claude runs to launch your server — here, `node` executing the compiled `build/index.js`. Use the **absolute path** so Claude can find it regardless of which directory you launch it from.
 3. In `claude`, run `/mcp` to confirm it's connected, then ask a weather question:
    ```
    Are there any active weather alerts in California? What's the forecast for 47.6,-122.3?
