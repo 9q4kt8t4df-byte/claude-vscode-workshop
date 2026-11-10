@@ -1,5 +1,13 @@
 # Claude Code Workshop - NBA Sports Application
 
+<!-- stack-diagram:start -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/stack-diagram-dark.png">
+  <img alt="claude-vscode-workshop stack diagram" src="docs/stack-diagram.png">
+</picture>
+<!-- stack-diagram:end -->
+
+
 Welcome to the comprehensive **Claude Code Workshop**! This hands-on workshop teaches you to leverage AI-powered development with **Claude** (Anthropic's Claude Code) through a real NBA sports application built with **Next.js 14 (Frontend)** and **Python Flask (Backend)**.
 
 > This workshop is a Claude-focused adaptation of the [GitHub Copilot Workshop by yoavlax](https://github.com/yoavlax/githubcopilotworkshop). Every exercise has been re-tooled around Claude Code — its agentic default loop, `CLAUDE.md` memory, subagents, slash commands, Agent Skills, MCP, plan mode, and checkpoints. If you've done the Copilot version, you'll recognize the app and the goals; the *how* is what changes. See [Credits](#-credits--acknowledgments) below.
